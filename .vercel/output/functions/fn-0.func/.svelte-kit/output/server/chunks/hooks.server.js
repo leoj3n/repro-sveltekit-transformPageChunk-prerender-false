@@ -1,0 +1,40 @@
+import { i as building } from "./internal.js";
+const minification_options = {
+  collapseBooleanAttributes: true,
+  collapseWhitespace: true,
+  conservativeCollapse: true,
+  decodeEntities: true,
+  html5: true,
+  ignoreCustomComments: [/^#/],
+  minifyCSS: true,
+  minifyJS: true,
+  removeAttributeQuotes: true,
+  removeComments: false,
+  // some hydration code needs comments, so leave them in
+  removeOptionalTags: true,
+  removeRedundantAttributes: true,
+  removeScriptTypeAttributes: true,
+  removeStyleLinkTypeAttributes: true,
+  sortAttributes: true,
+  sortClassName: true
+};
+async function minify_handle({ event, resolve }) {
+  let page = "";
+  return resolve(event, {
+    transformPageChunk: async ({ html, done }) => {
+      page += html;
+      if (done) {
+        if (building) {
+          const minify = (await import("html-minifier-terser")).minify;
+          return minify(page, minification_options);
+        } else {
+          return page;
+        }
+      }
+    }
+  });
+}
+const handle = minify_handle;
+export {
+  handle
+};
